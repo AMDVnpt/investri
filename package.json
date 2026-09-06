@@ -1,0 +1,28 @@
+{
+  "name": "investri",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "db:generate": "pnpm --filter @investri/database generate",
+    "db:migrate": "pnpm --filter @investri/database migrate",
+    "db:seed": "pnpm --filter @investri/database seed",
+    "db:reset": "pnpm --filter @investri/database reset-seed",
+    "demo:reset": "pnpm --filter @investri/database reset-seed"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "18.3.18",
+      "@types/react-dom": "18.3.5"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "@investri/api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@investri/analytics": "workspace:*",
+    "@investri/config": "workspace:*",
+    "@investri/database": "workspace:*",
+    "@investri/domain": "workspace:*",
+    "@investri/providers": "workspace:*",
+    "@investri/validation": "workspace:*",
+    "@nestjs/common": "^11.1.2",
+    "@nestjs/core": "^11.1.2",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/platform-express": "^11.1.2",
+    "@nestjs/swagger": "^11.2.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0",
+    "dotenv": "^16.5.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.7",
+    "@nestjs/testing": "^11.1.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.21",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

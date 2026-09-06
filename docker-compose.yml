@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: investri-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: investri
+      POSTGRES_PASSWORD: investri
+      POSTGRES_DB: investri
+    ports:
+      - "5432:5432"
+    volumes:
+      - investri_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U investri -d investri"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  investri_pg_data:

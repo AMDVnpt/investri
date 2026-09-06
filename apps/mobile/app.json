@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "InvestRI",
+    "slug": "investri",
+    "scheme": "investri",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router", "expo-secure-store", "expo-font"],
+    "ios": { "supportsTablet": false, "bundleIdentifier": "ri.investri.poc" },
+    "android": { "package": "ri.investri.poc" },
+    "web": { "bundler": "metro", "output": "single" }
+  }
+}

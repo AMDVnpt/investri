@@ -1,0 +1,19 @@
+{
+  "name": "@investri/assets",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./photos/*": "./photos/*",
+    "./wordmark.svg": "./wordmark.svg",
+    "./ri-coastline.svg": "./ri-coastline.svg"
+  },
+  "scripts": {
+    "build": "node -e \"process.exit(0)\"",
+    "typecheck": "node -e \"process.exit(0)\"",
+    "lint": "node -e \"process.exit(0)\"",
+    "test": "node -e \"process.exit(0)\""
+  }
+}

@@ -1,0 +1,793 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  CITIZEN_INVESTOR
+  COMMERCE_REVIEWER
+  COMMERCE_PROGRAM_ADMIN
+  COMMERCE_TAX_ADMIN
+  COMPLIANCE_OFFICER
+  FUND_MANAGER
+  FUND_MANAGER_EDITOR
+  AUDITOR_READ_ONLY
+  SYSTEM_ADMIN
+}
+
+enum OfferingFramework {
+  REG_CF
+  REG_A_TIER_1
+  REG_A_TIER_2
+  RULE_147
+  RULE_147A
+  REGISTERED_FUND
+  MUNICIPAL_OR_QUASI_PUBLIC
+  OTHER
+  DEMO
+}
+
+enum OfferingStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  CHANGES_REQUESTED
+  COMMERCE_APPROVED
+  REGULATORY_APPROVED
+  SCHEDULED
+  LIVE
+  PAUSED
+  CLOSED
+  MATURED
+  ARCHIVED
+}
+
+enum DocumentAccessLevel {
+  PUBLIC
+  AUTHENTICATED
+  ELIGIBLE_INVESTOR
+}
+
+enum TaxCreditProgramStatus {
+  PROPOSED
+  ENACTED
+  ACTIVE
+  SUNSET
+  SUSPENDED
+}
+
+enum VestingMethod {
+  IMMEDIATE
+  ANNUAL_EQUAL
+  CUSTOM_SCHEDULE
+  MILESTONE_BASED
+}
+
+enum ProjectStatus {
+  PIPELINE
+  ACTIVE
+  COMPLETED
+  DELAYED
+  CANCELLED
+}
+
+enum ImpactVerificationStatus {
+  SELF_REPORTED
+  PENDING_VERIFICATION
+  VERIFIED
+  REJECTED
+}
+
+enum VerificationStatus {
+  pending
+  passed
+  failed
+}
+
+enum InvestmentOrderStatus {
+  QUOTED
+  LIMIT_FAILED
+  AWAITING_FUNDING
+  AWAITING_SIGNATURE
+  SUBMITTED
+  COMPLIANCE_REVIEW
+  FUNDING_PENDING
+  SETTLED
+  FAILED
+  CANCELED
+}
+
+enum CashFlowType {
+  CONTRIBUTION
+  FEE
+  DISTRIBUTION
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique
+  passwordHash    String?
+  firstName       String
+  lastName        String
+  phone           String?
+  emailVerifiedAt DateTime?
+  mfaEnabled      Boolean   @default(false)
+  status          String    @default("ACTIVE")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  roles                   UserRole[]
+  sessions                Session[]
+  auditEvents             AuditEvent[]
+  investorProfile         InvestorProfile?
+  identityVerification    IdentityVerification?
+  residencyVerification   ResidencyVerification?
+  investorEligibility     InvestorEligibility?
+  acknowledgements        InvestorAcknowledgement[]
+  investorAccount         InvestorAccount?
+  documents               InvestorDocument[]
+  activities              PortfolioActivity[]
+  taxCreditEntitlements   TaxCreditEntitlement[]
+  notifications           Notification[]
+  notificationPreference  NotificationPreference?
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  name        RoleName         @unique
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id    String           @id @default(uuid()) @db.Uuid
+  key   String           @unique
+  roles RolePermission[]
+}
+
+model RolePermission {
+  roleId       String @db.Uuid
+  permissionId String @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model UserRole {
+  userId String @db.Uuid
+  roleId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  refreshTokenHash String    @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  userAgent        String?
+  createdAt        DateTime  @default(now())
+  user             User      @relation(fields: [userId], references: [id])
+}
+
+model AuditEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  actorUserId   String?  @db.Uuid
+  actorRole     String?
+  action        String
+  entityType    String
+  entityId      String
+  beforeJson    Json?
+  afterJson     Json?
+  reasonCode    String?
+  sourceIp      String?
+  userAgent     String?
+  correlationId String
+  createdAt     DateTime @default(now())
+  actor         User?    @relation(fields: [actorUserId], references: [id])
+}
+
+model FundManager {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+  shortName   String
+  description String
+  website     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  offerings   Offering[]
+}
+
+model TaxCreditProgram {
+  id                         String                  @id @default(uuid()) @db.Uuid
+  name                       String
+  authorityCitation          String?
+  status                     TaxCreditProgramStatus
+  creditRate                 Decimal                 @db.Decimal(8, 6)
+  vestingMethod              VestingMethod
+  carryforwardYears          Int?
+  refundable                 Boolean
+  transferable               Boolean
+  residencyRequired          Boolean
+  minimumHoldingPeriodMonths Int?
+  recaptureEnabled           Boolean
+  totalProgramCap            Decimal?                @db.Decimal(19, 4)
+  annualProgramCap           Decimal?                @db.Decimal(19, 4)
+  disclaimerKey              String
+  effectiveDate              DateTime?
+  sunsetDate                 DateTime?
+  eligibleTaxTypes           String[]                @default([])
+  createdAt                  DateTime                @default(now())
+  updatedAt                  DateTime                @updatedAt
+  schedules                  TaxCreditSchedule[]
+  offerings                  Offering[]
+  caps                       ProgramCap[]
+  ledger                     ProgramCapLedger[]
+  entitlements               TaxCreditEntitlement[]
+}
+
+model TaxCreditSchedule {
+  id        String            @id @default(uuid()) @db.Uuid
+  programId String            @db.Uuid
+  yearIndex Int
+  rate      Decimal           @db.Decimal(8, 6)
+  program   TaxCreditProgram  @relation(fields: [programId], references: [id])
+}
+
+model Offering {
+  id                    String              @id @default(uuid()) @db.Uuid
+  slug                  String              @unique
+  name                  String
+  shortName             String
+  managerId             String              @db.Uuid
+  framework             OfferingFramework   @default(DEMO)
+  governingRegulator    String?
+  status                OfferingStatus
+  category              String
+  description           String
+  thesis                String
+  heroImageUrl          String?
+  heroImageAlt          String?
+  galleryJson           Json?
+  minInvestment         Decimal             @db.Decimal(19, 4)
+  maxInvestment         Decimal?            @db.Decimal(19, 4)
+  targetRaise           Decimal             @db.Decimal(19, 4)
+  raisedAmount          Decimal             @db.Decimal(19, 4)
+  targetReturnLow       Decimal?            @db.Decimal(8, 6)
+  targetReturnHigh      Decimal?            @db.Decimal(8, 6)
+  targetTermMonths      Int?
+  liquidityDescription  String
+  distributionFrequency String
+  riskLevel             String
+  residentOnly          Boolean             @default(true)
+  taxCreditProgramId    String?             @db.Uuid
+  taxFormType           String?
+  openAt                DateTime?
+  closeAt               DateTime?
+  publishedAt           DateTime?
+  currentVersionId      String?             @db.Uuid
+  isIllustrative        Boolean             @default(true)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  manager               FundManager         @relation(fields: [managerId], references: [id])
+  taxCreditProgram      TaxCreditProgram?   @relation(fields: [taxCreditProgramId], references: [id])
+  versions              OfferingVersion[]
+  terms                 OfferingTerm[]
+  fees                  OfferingFee[]
+  risks                 OfferingRisk[]
+  documents             OfferingDocument[]
+  allocations           OfferingAllocation[]
+  updates               OfferingUpdate[]
+  eligibilityRules      OfferingEligibilityRule[]
+  projectInvestments    ProjectInvestment[]
+  acknowledgements      InvestorAcknowledgement[]
+  orders                InvestmentOrder[]
+  positions             InvestmentPosition[]
+}
+
+model OfferingVersion {
+  id          String   @id @default(uuid()) @db.Uuid
+  offeringId  String   @db.Uuid
+  version     Int
+  snapshot    Json
+  publishedAt DateTime @default(now())
+  offering    Offering @relation(fields: [offeringId], references: [id])
+
+  @@unique([offeringId, version])
+}
+
+model OfferingTerm {
+  id         String   @id @default(uuid()) @db.Uuid
+  offeringId String   @db.Uuid
+  label      String
+  value      String
+  sortOrder  Int      @default(0)
+  offering   Offering @relation(fields: [offeringId], references: [id])
+}
+
+model OfferingFee {
+  id          String   @id @default(uuid()) @db.Uuid
+  offeringId  String   @db.Uuid
+  name        String
+  description String
+  amountLabel String
+  sortOrder   Int      @default(0)
+  offering    Offering @relation(fields: [offeringId], references: [id])
+}
+
+model OfferingRisk {
+  id           String   @id @default(uuid()) @db.Uuid
+  offeringId   String   @db.Uuid
+  title        String
+  summary      String
+  body         String
+  isSummary    Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  offering     Offering @relation(fields: [offeringId], references: [id])
+}
+
+model OfferingDocument {
+  id          String              @id @default(uuid()) @db.Uuid
+  offeringId  String              @db.Uuid
+  title       String
+  category    String
+  accessLevel DocumentAccessLevel
+  url         String
+  sortOrder   Int                 @default(0)
+  offering    Offering            @relation(fields: [offeringId], references: [id])
+}
+
+model OfferingAllocation {
+  id         String   @id @default(uuid()) @db.Uuid
+  offeringId String   @db.Uuid
+  key        String
+  label      String
+  percentage Decimal  @db.Decimal(8, 6)
+  sortOrder  Int      @default(0)
+  offering   Offering @relation(fields: [offeringId], references: [id])
+}
+
+model OfferingUpdate {
+  id         String   @id @default(uuid()) @db.Uuid
+  offeringId String   @db.Uuid
+  title      String
+  body       String
+  publishedAt DateTime @default(now())
+  offering   Offering @relation(fields: [offeringId], references: [id])
+}
+
+model OfferingEligibilityRule {
+  id         String   @id @default(uuid()) @db.Uuid
+  offeringId String   @db.Uuid
+  key        String
+  value      String
+  offering   Offering @relation(fields: [offeringId], references: [id])
+}
+
+model Project {
+  id               String               @id @default(uuid()) @db.Uuid
+  name             String
+  slug             String               @unique
+  description      String
+  sector           String
+  status           ProjectStatus
+  isIllustrative   Boolean              @default(true)
+  useOfCapital     String?
+  capitalStackJson Json?
+  heroImageUrl     String?
+  beforeImageUrl   String?
+  afterImageUrl    String?
+  imageAlt         String?
+  imageCredit      String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  locations        ProjectLocation[]
+  investments      ProjectInvestment[]
+  metrics          ImpactMetricReport[]
+  milestones       ProjectMilestone[]
+}
+
+model ProjectMilestone {
+  id         String   @id @default(uuid()) @db.Uuid
+  projectId  String   @db.Uuid
+  title      String
+  body       String
+  occurredAt DateTime
+  sortOrder  Int      @default(0)
+  project    Project  @relation(fields: [projectId], references: [id])
+}
+
+model ProjectLocation {
+  id           String  @id @default(uuid()) @db.Uuid
+  projectId    String  @db.Uuid
+  municipality String
+  state        String  @default("RI")
+  isStatewide  Boolean @default(false)
+  latitude     Decimal? @db.Decimal(9, 6)
+  longitude    Decimal? @db.Decimal(9, 6)
+  project      Project @relation(fields: [projectId], references: [id])
+}
+
+model ProjectInvestment {
+  id            String   @id @default(uuid()) @db.Uuid
+  projectId     String   @db.Uuid
+  offeringId    String   @db.Uuid
+  amountDeployed Decimal @db.Decimal(19, 4)
+  project       Project  @relation(fields: [projectId], references: [id])
+  offering      Offering @relation(fields: [offeringId], references: [id])
+}
+
+model ImpactMetricDefinition {
+  id          String               @id @default(uuid()) @db.Uuid
+  key         String               @unique
+  label       String
+  unit        String
+  reports     ImpactMetricReport[]
+}
+
+model ImpactMetricReport {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  projectId          String                   @db.Uuid
+  definitionId       String                   @db.Uuid
+  value              Decimal                  @db.Decimal(19, 4)
+  source             String
+  period             String
+  verificationStatus ImpactVerificationStatus @default(SELF_REPORTED)
+  project            Project                  @relation(fields: [projectId], references: [id])
+  definition         ImpactMetricDefinition   @relation(fields: [definitionId], references: [id])
+  evidence           ImpactEvidence[]
+}
+
+model ImpactEvidence {
+  id      String             @id @default(uuid()) @db.Uuid
+  reportId String            @db.Uuid
+  label    String
+  url      String
+  report   ImpactMetricReport @relation(fields: [reportId], references: [id])
+}
+
+model DisclosureTemplate {
+  id       String              @id @default(uuid()) @db.Uuid
+  key      String              @unique
+  name     String
+  versions DisclosureVersion[]
+}
+
+model DisclosureVersion {
+  id         String             @id @default(uuid()) @db.Uuid
+  templateId String             @db.Uuid
+  version    Int
+  title      String
+  body       String
+  publishedAt DateTime          @default(now())
+  template         DisclosureTemplate        @relation(fields: [templateId], references: [id])
+  acknowledgements InvestorAcknowledgement[]
+
+  @@unique([templateId, version])
+}
+
+model InvestorProfile {
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String   @unique @db.Uuid
+  legalFirstName      String
+  legalLastName       String
+  dateOfBirth         DateTime @db.Date
+  phone               String?
+  citizenship         String
+  employmentStatus    String
+  occupation          String?
+  experienceBand      String
+  incomeRange         String
+  netWorthRange       String
+  accredited          Boolean  @default(false)
+  canBearLoss         Boolean
+  acceptsIlliquidity  Boolean
+  trustedContactName  String?
+  trustedContactPhone String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id])
+}
+
+model IdentityVerification {
+  id              String             @id @default(uuid()) @db.Uuid
+  userId          String             @unique @db.Uuid
+  applicantId     String
+  providerToken   String
+  ssnLastFour     String?
+  legalFirstName  String
+  legalLastName   String
+  dateOfBirth     DateTime           @db.Date
+  phone           String?
+  status          VerificationStatus
+  lastErrorReason String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  user            User               @relation(fields: [userId], references: [id])
+}
+
+model ResidencyVerification {
+  id                 String             @id @default(uuid()) @db.Uuid
+  userId             String             @unique @db.Uuid
+  street             String
+  city               String
+  state              String
+  postalCode         String
+  evidenceId         String
+  attestedRiResident Boolean
+  status             VerificationStatus
+  lastErrorReason    String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  user               User               @relation(fields: [userId], references: [id])
+}
+
+model InvestorEligibility {
+  id                String             @id @default(uuid()) @db.Uuid
+  userId            String             @unique @db.Uuid
+  suitable          Boolean
+  accredited        Boolean
+  residentQualified Boolean
+  status            VerificationStatus
+  reasonCode        String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  user              User               @relation(fields: [userId], references: [id])
+}
+
+model InvestorAcknowledgement {
+  id                  String            @id @default(uuid()) @db.Uuid
+  userId              String            @db.Uuid
+  disclosureVersionId String            @db.Uuid
+  offeringId          String?           @db.Uuid
+  scopeKey            String
+  acceptedAt          DateTime          @default(now())
+  user                User              @relation(fields: [userId], references: [id])
+  disclosureVersion   DisclosureVersion @relation(fields: [disclosureVersionId], references: [id])
+  offering            Offering?         @relation(fields: [offeringId], references: [id])
+
+  @@unique([userId, disclosureVersionId, scopeKey])
+}
+
+model InvestorAccount {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @unique @db.Uuid
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  user      User                 @relation(fields: [userId], references: [id])
+  orders    InvestmentOrder[]
+  positions InvestmentPosition[]
+}
+
+model InvestmentOrder {
+  id                String                @id @default(uuid()) @db.Uuid
+  investorAccountId String                @db.Uuid
+  offeringId        String                @db.Uuid
+  idempotencyKey    String                @unique
+  requestedAmount   Decimal               @db.Decimal(19, 4)
+  feeAmount         Decimal               @db.Decimal(19, 4)
+  status            InvestmentOrderStatus
+  brokerageOrderId  String?
+  fundingTransferId String?
+  envelopeId        String?
+  failureReason     String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  account           InvestorAccount       @relation(fields: [investorAccountId], references: [id])
+  offering          Offering              @relation(fields: [offeringId], references: [id])
+  subscription      InvestmentSubscription?
+  position          InvestmentPosition?
+}
+
+model InvestmentSubscription {
+  id              String          @id @default(uuid()) @db.Uuid
+  orderId         String          @unique @db.Uuid
+  offeringId      String          @db.Uuid
+  offeringVersion Int
+  amount          Decimal         @db.Decimal(19, 4)
+  snapshot        Json
+  createdAt       DateTime        @default(now())
+  order           InvestmentOrder @relation(fields: [orderId], references: [id])
+}
+
+model InvestmentPosition {
+  id                 String               @id @default(uuid()) @db.Uuid
+  investorAccountId  String               @db.Uuid
+  offeringId         String               @db.Uuid
+  orderId            String               @unique @db.Uuid
+  settledAmount      Decimal              @db.Decimal(19, 4)
+  costBasis          Decimal              @db.Decimal(19, 4)
+  currentValue       Decimal              @db.Decimal(19, 4)
+  totalDistributions Decimal              @db.Decimal(19, 4) @default(0)
+  status             String               @default("OPEN")
+  openedAt           DateTime             @default(now())
+  account            InvestorAccount      @relation(fields: [investorAccountId], references: [id])
+  offering           Offering             @relation(fields: [offeringId], references: [id])
+  order              InvestmentOrder      @relation(fields: [orderId], references: [id])
+  cashFlows          InvestmentCashFlow[]
+  valuations         Valuation[]
+  distributions      Distribution[]
+  activities         PortfolioActivity[]
+  documents          InvestorDocument[]
+  taxCreditEntitlement TaxCreditEntitlement?
+}
+
+model InvestmentCashFlow {
+  id             String             @id @default(uuid()) @db.Uuid
+  positionId     String             @db.Uuid
+  type           CashFlowType
+  amount         Decimal            @db.Decimal(19, 4)
+  occurredAt     DateTime           @default(now())
+  idempotencyKey String
+  position       InvestmentPosition @relation(fields: [positionId], references: [id])
+
+  @@unique([positionId, type, idempotencyKey])
+}
+
+model Valuation {
+  id         String             @id @default(uuid()) @db.Uuid
+  positionId String             @db.Uuid
+  asOf       DateTime
+  value      Decimal            @db.Decimal(19, 4)
+  source     String
+  position   InvestmentPosition @relation(fields: [positionId], references: [id])
+}
+
+model Distribution {
+  id          String             @id @default(uuid()) @db.Uuid
+  positionId  String             @db.Uuid
+  amount      Decimal            @db.Decimal(19, 4)
+  paidAt      DateTime
+  periodLabel String
+  position    InvestmentPosition @relation(fields: [positionId], references: [id])
+}
+
+model PortfolioActivity {
+  id         String              @id @default(uuid()) @db.Uuid
+  userId     String              @db.Uuid
+  positionId String?             @db.Uuid
+  type       String
+  title      String
+  body       String?
+  occurredAt DateTime            @default(now())
+  user       User                @relation(fields: [userId], references: [id])
+  position   InvestmentPosition? @relation(fields: [positionId], references: [id])
+}
+
+model InvestorDocument {
+  id          String               @id @default(uuid()) @db.Uuid
+  userId      String               @db.Uuid
+  positionId  String?              @db.Uuid
+  category    String
+  taxYear     Int?
+  title       String
+  url         String
+  publishedAt DateTime             @default(now())
+  user        User                 @relation(fields: [userId], references: [id])
+  position    InvestmentPosition?  @relation(fields: [positionId], references: [id])
+  certificate TaxCreditCertificate?
+}
+
+model ProgramCap {
+  id               String           @id @default(uuid()) @db.Uuid
+  programId        String           @db.Uuid
+  year             Int?
+  authorizedAmount Decimal          @db.Decimal(19, 4)
+  program          TaxCreditProgram @relation(fields: [programId], references: [id])
+}
+
+model ProgramCapLedger {
+  id             String           @id @default(uuid()) @db.Uuid
+  programId      String           @db.Uuid
+  entryType      String
+  amount         Decimal          @db.Decimal(19, 4)
+  offeringId     String?          @db.Uuid
+  entitlementId  String?          @db.Uuid
+  idempotencyKey String           @unique
+  createdAt      DateTime         @default(now())
+  program        TaxCreditProgram @relation(fields: [programId], references: [id])
+}
+
+model TaxCreditEntitlement {
+  id              String                   @id @default(uuid()) @db.Uuid
+  userId          String                   @db.Uuid
+  positionId      String                   @unique @db.Uuid
+  programId       String                   @db.Uuid
+  qualifiedBasis  Decimal                  @db.Decimal(19, 4)
+  potentialCredit Decimal                  @db.Decimal(19, 4)
+  earnedCredit    Decimal                  @db.Decimal(19, 4) @default(0)
+  certifiedCredit Decimal                  @db.Decimal(19, 4) @default(0)
+  claimedCredit   Decimal                  @db.Decimal(19, 4) @default(0)
+  status          String
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  user            User                     @relation(fields: [userId], references: [id])
+  position        InvestmentPosition       @relation(fields: [positionId], references: [id])
+  program         TaxCreditProgram         @relation(fields: [programId], references: [id])
+  vestingEvents   TaxCreditVestingEvent[]
+  certificates    TaxCreditCertificate[]
+  adjustments     TaxCreditAdjustment[]
+  recaptureCases  TaxCreditRecaptureCase[]
+}
+
+model TaxCreditVestingEvent {
+  id            String               @id @default(uuid()) @db.Uuid
+  entitlementId String               @db.Uuid
+  yearIndex     Int
+  amount        Decimal              @db.Decimal(19, 4)
+  vestsOn       DateTime
+  status        String
+  entitlement   TaxCreditEntitlement @relation(fields: [entitlementId], references: [id])
+}
+
+model TaxCreditCertificate {
+  id                      String               @id @default(uuid()) @db.Uuid
+  entitlementId           String               @db.Uuid
+  number                  String               @unique
+  taxYear                 Int
+  certifiedAmount         Decimal              @db.Decimal(19, 4)
+  availableAmount         Decimal              @db.Decimal(19, 4)
+  claimedAmount           Decimal              @db.Decimal(19, 4) @default(0)
+  carryforwardExpiresOn   DateTime?
+  documentId              String?              @unique @db.Uuid
+  commerceApprovedBy      String?
+  supersedesCertificateId String?
+  voidedAt                DateTime?
+  voidReason              String?
+  issuedAt                DateTime             @default(now())
+  validationCode          String
+  entitlement             TaxCreditEntitlement @relation(fields: [entitlementId], references: [id])
+  document                InvestorDocument?    @relation(fields: [documentId], references: [id])
+}
+
+model TaxCreditAdjustment {
+  id            String               @id @default(uuid()) @db.Uuid
+  entitlementId String               @db.Uuid
+  amount        Decimal              @db.Decimal(19, 4)
+  reason        String
+  reasonCode    String
+  createdAt     DateTime             @default(now())
+  entitlement   TaxCreditEntitlement @relation(fields: [entitlementId], references: [id])
+}
+
+model Notification {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  type       String
+  title      String
+  body       String
+  entityType String?
+  entityId   String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, type, entityId])
+}
+
+model NotificationPreference {
+  id           String  @id @default(uuid()) @db.Uuid
+  userId       String  @unique @db.Uuid
+  pushEnabled  Boolean @default(true)
+  emailEnabled Boolean @default(true)
+  smsEnabled   Boolean @default(false)
+  user         User    @relation(fields: [userId], references: [id])
+}
+
+model TaxCreditRecaptureCase {
+  id            String               @id @default(uuid()) @db.Uuid
+  entitlementId String               @db.Uuid
+  status        String
+  reason        String
+  reasonCode    String
+  createdAt     DateTime             @default(now())
+  entitlement   TaxCreditEntitlement @relation(fields: [entitlementId], references: [id])
+}

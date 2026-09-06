@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "admin": {
+      "root": "apps/admin",
+      "framework": "nextjs",
+      "installCommand": "cd ../.. && pnpm install",
+      "buildCommand": "cd ../.. && pnpm --filter @investri/admin... build"
+    },
+    "api": {
+      "root": "apps/api",
+      "framework": "nestjs",
+      "entrypoint": "src/main.ts",
+      "installCommand": "cd ../.. && pnpm install",
+      "buildCommand": "cd ../.. && pnpm --filter @investri/api... build",
+      "functions": {
+        "src/main.ts": {
+          "includeFiles": "../../packages/assets/**",
+          "maxDuration": 60
+        }
+      }
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": { "service": "api" } },
+    { "source": "/assets/(.*)", "destination": { "service": "api" } },
+    { "source": "/(.*)", "destination": { "service": "admin" } }
+  ]
+}
