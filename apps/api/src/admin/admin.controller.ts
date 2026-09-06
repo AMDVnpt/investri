@@ -19,6 +19,7 @@ import { TaxCreditEngineService } from "../tax-credits/tax-credit-engine.service
 import { loadConfig } from "@investri/config";
 import { AdminService } from "./admin.service";
 import { ImpactService } from "../impact/impact.service";
+import { AuthService } from "../auth/auth.service";
 import {
   offeringActionSchema,
   recaptureReviewSchema,
@@ -41,6 +42,7 @@ export class AdminController {
     private readonly taxCredits: TaxCreditEngineService,
     private readonly admin: AdminService,
     private readonly impact: ImpactService,
+    private readonly auth: AuthService,
   ) {}
 
   @Get("health")
@@ -52,7 +54,7 @@ export class AdminController {
   @Get("me")
   @Permissions(Permission.OFFERING_READ)
   me(@CurrentUser() user: RequestUser) {
-    return user;
+    return this.auth.getUser(user.id);
   }
 
   @Get("dashboard")

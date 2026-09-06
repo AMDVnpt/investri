@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "../../lib/api";
+import { api, storeAccessToken } from "../../lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,10 +14,11 @@ export default function LoginPage() {
     event.preventDefault();
     setError(null);
     try {
-      await api("/auth/login", {
+      const result = await api<{ accessToken: string }>("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
+      storeAccessToken(result.accessToken);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to sign in");

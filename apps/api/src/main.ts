@@ -13,6 +13,9 @@ function allowedOrigins() {
   const origins = new Set<string>([
     config.WEB_ORIGIN,
     config.MANAGER_ORIGIN,
+    "http://localhost:3000",
+    "http://localhost:3002",
+    "http://localhost:3003",
     "http://localhost:8081",
     "http://localhost:19006",
   ]);
@@ -35,7 +38,7 @@ export async function createApp() {
         callback(null, true);
         return;
       }
-      callback(new Error("Not allowed by CORS"));
+      callback(null, false);
     },
     credentials: true,
   });
