@@ -9,6 +9,6 @@
     "plugins": ["expo-router", "expo-secure-store", "expo-font"],
     "ios": { "supportsTablet": false, "bundleIdentifier": "ri.investri.poc" },
     "android": { "package": "ri.investri.poc" },
-    "web": { "bundler": "metro", "output": "single" }
+    "web": { "bundler": "metro", "output": "static" }
   }
 }
