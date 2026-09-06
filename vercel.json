@@ -15,7 +15,7 @@
       "buildCommand": "cd ../.. && pnpm --filter @investri/api... build",
       "functions": {
         "src/main.ts": {
-          "includeFiles": "../../{packages/assets/**,node_modules/reflect-metadata/**,node_modules/.pnpm/reflect-metadata@*/**}",
+          "includeFiles": "../../packages/assets/**",
           "maxDuration": 60
         }
       }

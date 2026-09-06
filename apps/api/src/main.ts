@@ -1,4 +1,6 @@
-import "reflect-metadata";
+// Relative import so Vercel's Nest bundler inlines the polyfill instead of
+// emitting `require("reflect-metadata")` against a missing node_modules copy.
+import "./vendor/reflect-metadata.js";
 import "./env";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";

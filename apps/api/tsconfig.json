@@ -10,8 +10,9 @@
     "strictPropertyInitialization": false,
     "noEmit": false,
     "declaration": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "allowJs": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/vendor/**/*.js"],
   "exclude": ["src/**/*.test.ts"]
 }
