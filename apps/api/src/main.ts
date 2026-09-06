@@ -1,7 +1,6 @@
 // Relative import so Vercel's Nest bundler inlines the polyfill instead of
 // emitting `require("reflect-metadata")` against a missing node_modules copy.
 import "./vendor/reflect-metadata.js";
-import "./env";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
@@ -61,6 +60,7 @@ export async function createApp() {
 }
 
 async function listen() {
+  await import("./env");
   const config = loadConfig();
   const app = await createApp();
   await app.listen(config.API_PORT);
