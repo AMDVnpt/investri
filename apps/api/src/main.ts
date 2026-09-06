@@ -5,6 +5,7 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
 import { json, static as expressStatic, type Express } from "express";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { AppModule } from "./app.module";
 import { loadConfig } from "@investri/config";
@@ -44,7 +45,10 @@ export async function createApp() {
     credentials: true,
   });
 
-  const assetsDir = path.resolve(__dirname, "../../../packages/assets");
+  const bundledAssets = path.join(__dirname, "assets");
+  const assetsDir = existsSync(bundledAssets)
+    ? bundledAssets
+    : path.resolve(__dirname, "../../../packages/assets");
   app.use("/assets", expressStatic(assetsDir));
 
   const swagger = new DocumentBuilder()

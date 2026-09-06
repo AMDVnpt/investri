@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
+    "bundle:vercel": "node scripts/bundle-vercel.mjs",
     "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "tsc -p tsconfig.json --noEmit",
@@ -24,8 +25,8 @@
     "@nestjs/swagger": "^11.2.0",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
-    "express": "^5.1.0",
     "dotenv": "^16.5.0",
+    "express": "^5.1.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
@@ -36,6 +37,7 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.21",
+    "esbuild": "^0.28.2",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   }

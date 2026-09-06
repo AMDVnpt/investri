@@ -9,13 +9,13 @@
     },
     "api": {
       "root": "apps/api",
-      "framework": "nestjs",
-      "entrypoint": "src/main.ts",
+      "framework": "express",
+      "entrypoint": "dist/vercel.cjs",
       "installCommand": "cd ../.. && pnpm install",
-      "buildCommand": "cd ../.. && pnpm --filter @investri/api... build",
+      "buildCommand": "cd ../.. && pnpm --filter @investri/api... build && pnpm --filter @investri/api bundle:vercel",
       "functions": {
-        "src/main.ts": {
-          "includeFiles": "../../packages/assets/**",
+        "dist/vercel.cjs": {
+          "includeFiles": "{dist/node_modules/**,dist/assets/**}",
           "maxDuration": 60
         }
       }
