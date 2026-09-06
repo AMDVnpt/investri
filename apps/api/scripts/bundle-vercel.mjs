@@ -17,9 +17,9 @@ function copyDir(from, to) {
   cpSync(from, to, { recursive: true });
 }
 
-const entry = path.join(dist, "main.js");
+const entry = path.join(dist, "server.js");
 if (!existsSync(entry)) {
-  throw new Error("dist/main.js is missing. Run nest build before bundle:vercel.");
+  throw new Error("dist/server.js is missing. Run nest build before bundle:vercel.");
 }
 
 await esbuild.build({
