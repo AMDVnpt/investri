@@ -1,6 +1,9 @@
 node_modules
 .turbo
 dist
+apps/api/dist/**
+!apps/api/dist/
+!apps/api/dist/vercel.cjs
 .next
 .vercel
 .expo
