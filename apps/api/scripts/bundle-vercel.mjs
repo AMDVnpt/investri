@@ -79,6 +79,11 @@ if (existsSync(assetsSrc)) {
   copyDir(assetsSrc, path.join(dist, "assets"));
 }
 
+for (const name of readdirSync(dist)) {
+  if (name === "vercel.cjs" || name === "node_modules" || name === "assets") continue;
+  rmSync(path.join(dist, name), { recursive: true, force: true });
+}
+
 console.log(
   `Vercel bundle written to ${path.relative(root, outfile)} with prisma engines:`,
   readdirSync(path.join(bundledNodeModules, ".prisma/client")).filter((name) =>
