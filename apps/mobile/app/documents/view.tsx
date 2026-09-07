@@ -26,10 +26,10 @@ export default function DocumentViewScreen() {
           const doc = await api<{ body: string; contentType?: string }>(
             `/offerings/${params.offeringId}/documents/${params.documentId}`,
           );
-          if (!cancelled) {
+          if (!cancelled && doc.body && !doc.body.includes("could not be loaded from disk")) {
             setBody(doc.body);
+            return;
           }
-          return;
         } catch {
           // Fall through to the static asset.
         }
