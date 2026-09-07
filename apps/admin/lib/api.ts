@@ -1,4 +1,8 @@
-const API = process.env.NEXT_PUBLIC_API_URL ?? (process.env.VERCEL ? "" : "http://localhost:3001");
+// NEXT_PUBLIC_API_URL is the only env Next inlines for the browser. process.env.VERCEL
+// is undefined in the client bundle, which previously defaulted production to localhost.
+const API =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === "production" ? "" : "http://localhost:3001");
 const ACCESS_KEY = "investri_admin_access";
 
 function readAccessToken() {
