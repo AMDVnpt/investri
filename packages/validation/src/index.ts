@@ -94,6 +94,13 @@ export const investmentSubmitSchema = z.object({
   bankLinkToken: z.string().optional(),
 });
 
+export const plaidExchangeSchema = z.object({
+  publicToken: z.string().min(8),
+  institutionId: z.string().min(1).optional(),
+});
+
+export type PlaidExchangeInput = z.infer<typeof plaidExchangeSchema>;
+
 export const taxCreditReasonSchema = z.object({
   reason: z.string().min(1),
   reasonCode: z.string().min(1),

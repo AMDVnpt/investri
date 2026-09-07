@@ -3,12 +3,21 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { api } from "../../lib/api";
 import { theme } from "../../lib/theme";
+import { DocumentRow } from "../../components/DocumentRow";
+import { ValueChart } from "../../components/ValueChart";
+import { signedUsd, usd } from "../../lib/format";
 
 type PositionDetail = {
+  offeringId: string;
   offeringName: string;
   settledAmount: string;
   currentValue: string;
-  totals: { unrealizedGainLoss: string; totalDistributions: string };
+  totals: {
+    unrealizedGainLoss: string;
+    totalDistributions: string;
+    realizedGainLoss?: string;
+    totalReturn?: string;
+  };
   taxCredit: {
     entitlementId?: string | null;
     potentialCredit: string;
@@ -16,15 +25,12 @@ type PositionDetail = {
     buckets?: { estimated: string; earned: string; certified: string; available: string; claimed: string };
     copy: string;
   };
-  documents: { id: string; title: string }[];
+  documents: { id: string; title: string; category?: string; url?: string }[];
   activity: { id: string; title: string }[];
   latestUpdate: { title: string } | null;
+  distributions: { id: string; amount: string; paidAt: string; periodLabel: string }[];
+  valueSeries: { asOf: string; value: string }[];
 };
-
-function usd(value?: string) {
-  const whole = (value ?? "0").split(".")[0];
-  return `$${Number(whole).toLocaleString("en-US")}`;
-}
 
 export default function PositionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -59,8 +65,24 @@ export default function PositionDetailScreen() {
       <Text style={styles.title}>{position.offeringName}</Text>
       <Text style={styles.body}>
         Value {usd(position.currentValue)} · Invested {usd(position.settledAmount)} · Unrealized{" "}
-        {usd(position.totals.unrealizedGainLoss)}
+        {signedUsd(position.totals.unrealizedGainLoss)}
       </Text>
+      <Text style={styles.body}>
+        Distributions {usd(position.totals.totalDistributions)}
+        {position.totals.totalReturn ? ` · Total return ${signedUsd(position.totals.totalReturn)}` : ""}
+      </Text>
+      <Text style={styles.kicker}>Value over time</Text>
+      <ValueChart series={position.valueSeries ?? []} />
+      <Text style={styles.kicker}>Distributions</Text>
+      {position.distributions?.length ? (
+        position.distributions.map((row) => (
+          <Text key={row.id} style={styles.body}>
+            {usd(row.amount)} · {row.periodLabel} · {new Date(row.paidAt).toLocaleDateString()}
+          </Text>
+        ))
+      ) : (
+        <Text style={styles.body}>No distributions posted yet.</Text>
+      )}
       <View style={styles.card}>
         <Text style={styles.kicker}>Tax credit</Text>
         <Text style={styles.body}>
@@ -82,9 +104,14 @@ export default function PositionDetailScreen() {
       {position.latestUpdate ? <Text style={styles.body}>{position.latestUpdate.title}</Text> : null}
       <Text style={styles.kicker}>Documents</Text>
       {position.documents.map((doc) => (
-        <Text key={doc.id} style={styles.body}>
-          {doc.title}
-        </Text>
+        <DocumentRow
+          key={doc.id}
+          title={doc.title}
+          category={doc.category}
+          url={doc.url}
+          offeringId={position.offeringId}
+          documentId={doc.id}
+        />
       ))}
       <Text style={styles.kicker}>Activity</Text>
       {position.activity.map((item) => (

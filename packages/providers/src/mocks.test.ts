@@ -67,5 +67,16 @@ describe("mock providers", () => {
     const providers = createMockProviders({ write: async () => undefined });
     const link = await providers.funding.createBankLinkToken("user-1");
     expect(link.linkToken).toMatch(/^bank_/);
+    const session = await providers.funding.createPlaidLinkSession("user-1");
+    expect(session.mode).toBe("plaid_sandbox_mock");
+    const account = await providers.funding.exchangePlaidPublicToken({
+      userId: "user-1",
+      publicToken: "public-sandbox-mock-citizens",
+      institutionId: "ins_citizens",
+    });
+    expect(account.institutionName).toBe("Citizens Bank");
+    expect(account.mask).toBe("4412");
+    expect(account.accountType).toBe("checking");
+    expect(JSON.stringify(account)).not.toMatch(/routing|accountNumber|password/i);
   });
 });

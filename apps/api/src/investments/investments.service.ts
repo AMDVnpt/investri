@@ -15,7 +15,11 @@ import {
   quoteInvestment,
 } from "@investri/domain";
 import type { ProviderRegistry } from "@investri/providers";
-import type { InvestmentQuoteInput, InvestmentSubmitInput } from "@investri/validation";
+import type {
+  InvestmentQuoteInput,
+  InvestmentSubmitInput,
+  PlaidExchangeInput,
+} from "@investri/validation";
 import { randomUUID } from "node:crypto";
 import type { RequestUser } from "../common/current-user";
 import { PROVIDERS } from "../providers/providers.token";
@@ -251,6 +255,49 @@ export class InvestmentsService {
     });
 
     return this.toPayload(created.order.id);
+  }
+
+  async createPlaidLink(user: RequestUser) {
+    await this.assertEligible(user);
+    const session = await this.providers.funding.createPlaidLinkSession(user.id);
+    return {
+      ...session,
+      labeledAs: "Plaid",
+      copy:
+        session.mode === "plaid"
+          ? "Connect your bank with Plaid. InvestRI never sees your login."
+          : "Plaid Link sandbox. This demonstration never stores a login, routing number, or account number.",
+    };
+  }
+
+  async exchangePlaid(user: RequestUser, input: PlaidExchangeInput) {
+    await this.assertEligible(user);
+    const account = await this.providers.funding.exchangePlaidPublicToken({
+      userId: user.id,
+      publicToken: input.publicToken,
+      institutionId: input.institutionId,
+    });
+    await this.providers.audit.write({
+      actorUserId: user.id,
+      actorRole: user.roles[0],
+      action: "funding.plaid_linked",
+      entityType: "FundingAccount",
+      entityId: account.accountId,
+      afterJson: {
+        institutionName: account.institutionName,
+        accountType: account.accountType,
+        mask: account.mask,
+      },
+      correlationId: randomUUID(),
+    });
+    return {
+      bankLinkToken: account.linkToken,
+      linkToken: account.linkToken,
+      institutionName: account.institutionName,
+      accountName: account.accountName,
+      accountType: account.accountType,
+      mask: account.mask,
+    };
   }
 
   async get(user: RequestUser, id: string) {

@@ -150,6 +150,22 @@ describe("investments API", () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it("creates a Plaid-style link session that degrades to the mock provider", async () => {
+    const user = await eligibleCitizen();
+    const session = await investments.createPlaidLink(user);
+    expect(session.mode).toBe("plaid_sandbox_mock");
+    expect(session.linkToken).toBeTruthy();
+    expect(session.institutions.length).toBeGreaterThan(0);
+    const linked = await investments.exchangePlaid(user, {
+      publicToken: "public-sandbox-mock-citizens",
+      institutionId: "ins_citizens",
+    });
+    expect(linked.institutionName).toBe("Citizens Bank");
+    expect(linked.mask).toMatch(/^\d{4}$/);
+    expect(linked.linkToken).toBeTruthy();
+    expect(JSON.stringify(linked)).not.toMatch(/routing|accountNumber|secret/i);
+  });
+
   it("does not persist bank credentials on the order or audit trail", async () => {
     const user = await eligibleCitizen();
     const result = await investments.submit(user, {

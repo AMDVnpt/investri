@@ -3,8 +3,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { api } from "../../lib/api";
 import { theme } from "../../lib/theme";
+import { DocumentRow } from "../../components/DocumentRow";
 
-type Doc = { id: string; title: string; category: string; taxYear: number | null };
+type Doc = { id: string; title: string; category: string; taxYear: number | null; url?: string };
 
 export default function DocumentsScreen() {
   const router = useRouter();
@@ -31,10 +32,12 @@ export default function DocumentsScreen() {
         ))}
       </View>
       {docs.map((doc) => (
-        <Text key={doc.id} style={styles.body}>
-          {doc.title}
-          {doc.taxYear ? ` · ${doc.taxYear}` : ""}
-        </Text>
+        <DocumentRow
+          key={doc.id}
+          title={`${doc.title}${doc.taxYear ? ` · ${doc.taxYear}` : ""}`}
+          category={doc.category}
+          url={doc.url}
+        />
       ))}
       <Text style={styles.body}>Rhode Island tax-credit certificate — Available after Commerce certification.</Text>
     </ScrollView>

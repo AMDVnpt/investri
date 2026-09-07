@@ -46,8 +46,39 @@ export interface BrokerageProvider {
   }): Promise<{ orderId: string }>;
 }
 
+export type PlaidLinkMode = "plaid" | "plaid_sandbox_mock";
+
+export type LinkedBankAccount = {
+  institutionId: string;
+  institutionName: string;
+  accountId: string;
+  accountName: string;
+  accountType: string;
+  mask: string;
+  linkToken: string;
+};
+
+export type PlaidLinkSession = {
+  mode: PlaidLinkMode;
+  linkToken: string;
+  expiration: string;
+  institutions: {
+    id: string;
+    name: string;
+    accountName: string;
+    accountType: string;
+    mask: string;
+  }[];
+};
+
 export interface FundingProvider {
   createBankLinkToken(userId: string): Promise<{ linkToken: string }>;
+  createPlaidLinkSession(userId: string): Promise<PlaidLinkSession>;
+  exchangePlaidPublicToken(input: {
+    userId: string;
+    publicToken: string;
+    institutionId?: string;
+  }): Promise<LinkedBankAccount>;
   initiateTransfer(input: {
     userId: string;
     amount: string;

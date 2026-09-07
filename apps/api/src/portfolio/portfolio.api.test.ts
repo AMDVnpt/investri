@@ -48,7 +48,13 @@ describe("portfolio API", () => {
     expect(summary.totals.totalContributions).toBe("1000.0000");
     expect(summary.totals.totalDistributions).toBe("20.0000");
     expect(summary.totals.unrealizedGainLoss).toBe("32.0000");
+    expect(summary.totals.totalReturn).toBe("52.0000");
+    expect(summary.totals.totalReturnPercent).toBe("0.0520");
+    expect(summary.distributions.some((row) => row.amount === "20.0000")).toBe(true);
     expect(summary.valueSeries.every((point) => point.kind === "value")).toBe(true);
+    expect(summary.valueSeries.every((point) => !["200.0000", "50.0000"].includes(point.value))).toBe(
+      true,
+    );
     expect(summary.taxCredit.proposed).toBe(true);
     expect(summary.taxCredit.buckets.certified).toBe("50.0000");
     expect(summary.taxCredit.buckets.estimated).toBe("200.0000");

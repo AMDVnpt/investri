@@ -6,6 +6,8 @@ export type PortfolioTotals = {
   currentValue: string;
   unrealizedGainLoss: string;
   realizedGainLoss: string;
+  totalReturn: string;
+  totalReturnPercent: string;
 };
 
 export function portfolioTotals(input: {
@@ -14,14 +16,20 @@ export function portfolioTotals(input: {
   currentValue: MoneyInput;
   costBasis: MoneyInput;
 }): PortfolioTotals {
+  const contributions = money(input.contributions);
+  const distributions = money(input.distributions);
   const currentValue = money(input.currentValue);
   const costBasis = money(input.costBasis);
+  const unrealized = currentValue.sub(costBasis);
+  const totalReturn = unrealized.add(distributions);
   return {
-    totalContributions: moneyString(input.contributions),
-    totalDistributions: moneyString(input.distributions),
+    totalContributions: moneyString(contributions),
+    totalDistributions: moneyString(distributions),
     currentValue: moneyString(currentValue),
-    unrealizedGainLoss: moneyString(currentValue.sub(costBasis)),
-    realizedGainLoss: moneyString(input.distributions),
+    unrealizedGainLoss: moneyString(unrealized),
+    realizedGainLoss: moneyString(distributions),
+    totalReturn: moneyString(totalReturn),
+    totalReturnPercent: contributions.isZero() ? "0.0000" : totalReturn.div(contributions).toFixed(4),
   };
 }
 

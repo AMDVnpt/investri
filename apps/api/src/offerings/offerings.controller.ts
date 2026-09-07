@@ -26,6 +26,16 @@ export class OfferingsController {
     return this.offerings.documents(id, Boolean(user));
   }
 
+  @Get(":id/documents/:docId")
+  @UseGuards(OptionalAuthGuard)
+  document(
+    @Param("id") id: string,
+    @Param("docId") docId: string,
+    @CurrentUser() user?: RequestUser,
+  ) {
+    return this.offerings.document(id, docId, Boolean(user));
+  }
+
   @Get(":id/risks")
   @UseGuards(OptionalAuthGuard)
   risks(@Param("id") id: string, @CurrentUser() user?: RequestUser) {

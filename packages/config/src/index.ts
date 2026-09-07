@@ -30,6 +30,9 @@ const envSchema = z.object({
   USE_MOCK_TAX_AGENCY: bool.default("true"),
   USE_MOCK_SSO: bool.default("true"),
   ALLOW_DEMO_RESET: bool.default("false"),
+  PLAID_CLIENT_ID: z.string().optional(),
+  PLAID_SECRET: z.string().optional(),
+  PLAID_ENV: z.enum(["sandbox", "development", "production"]).default("sandbox"),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;

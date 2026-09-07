@@ -9,6 +9,9 @@ export default function InvestSignScreen() {
     offeringId: string;
     amount: string;
     bankLinkToken?: string;
+    institutionName?: string;
+    accountType?: string;
+    mask?: string;
   }>();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +46,11 @@ export default function InvestSignScreen() {
       <Text style={s.body}>
         Mock e-signature for the subscription agreement and the risk acknowledgements you already accepted.
       </Text>
+      {params.institutionName ? (
+        <Text style={s.body}>
+          Funding from {params.institutionName} · {params.accountType ?? "checking"} · •••• {params.mask}
+        </Text>
+      ) : null}
       {error ? <Text style={s.error}>{error}</Text> : null}
       <Pressable style={s.button} accessibilityRole="button" onPress={submit}>
         <Text style={s.buttonText}>Accept and submit</Text>

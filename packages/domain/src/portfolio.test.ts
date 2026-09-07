@@ -13,5 +13,7 @@ describe("portfolioTotals", () => {
     expect(totals.totalContributions).toBe("1000.0000");
     expect(totals.totalDistributions).toBe("20.0000");
     expect(totals.unrealizedGainLoss).toBe("32.0000");
+    expect(totals.totalReturn).toBe("52.0000");
+    expect(totals.totalReturnPercent).toBe("0.0520");
   });
 });

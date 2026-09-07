@@ -98,6 +98,33 @@ export function createMockProviders(audit: AuditSink): ProviderRegistry {
       async createBankLinkToken() {
         return { linkToken: id("bank") };
       },
+      async createPlaidLinkSession() {
+        return {
+          mode: "plaid_sandbox_mock" as const,
+          linkToken: id("link"),
+          expiration: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+          institutions: [
+            {
+              id: "ins_citizens",
+              name: "Citizens Bank",
+              accountName: "Plaid Checking",
+              accountType: "checking",
+              mask: "4412",
+            },
+          ],
+        };
+      },
+      async exchangePlaidPublicToken(input) {
+        return {
+          institutionId: input.institutionId ?? "ins_citizens",
+          institutionName: "Citizens Bank",
+          accountId: id("acc"),
+          accountName: "Plaid Checking",
+          accountType: "checking",
+          mask: "4412",
+          linkToken: id("plaid"),
+        };
+      },
       async initiateTransfer() {
         return { transferId: id("xfer"), status: "settled" };
       },

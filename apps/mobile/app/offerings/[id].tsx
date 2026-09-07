@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { api, assetUrl, session } from "../../lib/api";
 import { AllocationChart } from "../../components/AllocationChart";
 import { Badge } from "../../components/Badge";
+import { DocumentRow } from "../../components/DocumentRow";
 import { theme } from "../../lib/theme";
 import type { MeResponse, OfferingDetail } from "../../lib/types";
 
@@ -130,15 +131,45 @@ export default function OfferingDetailScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.kicker}>Documents</Text>
-        {offering.documents.length === 0 ? (
+        <Text style={styles.kicker}>Diligence documents</Text>
+        <Text style={styles.body}>
+          Review the illustrative diligence pack before you invest. Open or download each file.
+        </Text>
+        {offering.documents.filter((doc) => doc.category === "Diligence").length === 0 ? (
+          <Text style={styles.fine}>Sign in to read the full diligence set.</Text>
+        ) : (
+          offering.documents
+            .filter((doc) => doc.category === "Diligence")
+            .map((doc) => (
+              <DocumentRow
+                key={doc.id}
+                title={doc.title}
+                category={doc.category}
+                url={doc.url}
+                offeringId={offering.id}
+                documentId={doc.id}
+              />
+            ))
+        )}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.kicker}>Offering documents</Text>
+        {offering.documents.filter((doc) => doc.category !== "Diligence").length === 0 ? (
           <Text style={styles.body}>Sign in to read the full offering documents.</Text>
         ) : (
-          offering.documents.map((doc) => (
-            <Text key={doc.id} style={styles.doc}>
-              {doc.title}
-            </Text>
-          ))
+          offering.documents
+            .filter((doc) => doc.category !== "Diligence")
+            .map((doc) => (
+              <DocumentRow
+                key={doc.id}
+                title={doc.title}
+                category={doc.category}
+                url={doc.url}
+                offeringId={offering.id}
+                documentId={doc.id}
+              />
+            ))
         )}
       </View>
 

@@ -144,6 +144,18 @@ export class PortfolioService {
       },
       valueSeries,
       cashFlows,
+      distributions: positions
+        .flatMap((position) =>
+          position.distributions.map((row) => ({
+            id: row.id,
+            positionId: position.id,
+            offeringName: position.offering.name,
+            amount: moneyString(row.amount),
+            paidAt: row.paidAt,
+            periodLabel: row.periodLabel,
+          })),
+        )
+        .sort((left, right) => +new Date(right.paidAt) - +new Date(left.paidAt)),
       allocations: allocation,
       municipalities: [...municipalities.entries()].map(([name, amount]) => ({
         name,
@@ -236,8 +248,19 @@ export class PortfolioService {
             ? "A portion of this credit has been certified. It is still proposed legislation and is not cash."
             : "Proposed / pending — you have not received this credit.",
       },
-      documents: position.documents,
+      documents: position.documents.map((doc) => ({
+        id: doc.id,
+        title: doc.title,
+        category: doc.category,
+        url: doc.url,
+      })),
       activity: position.activities,
+      distributions: position.distributions.map((row) => ({
+        id: row.id,
+        amount: moneyString(row.amount),
+        paidAt: row.paidAt,
+        periodLabel: row.periodLabel,
+      })),
       cashFlows: position.cashFlows.map((row) => ({
         id: row.id,
         type: row.type,

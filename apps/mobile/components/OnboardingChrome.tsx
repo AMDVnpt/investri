@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { theme } from "../lib/theme";
 import { ONBOARDING_STEPS } from "../lib/onboarding";
@@ -18,7 +18,7 @@ export function OnboardingChrome({
   const router = useRouter();
 
   return (
-    <View style={styles.screen}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Pressable onPress={() => router.back()} accessibilityRole="button">
         <Text style={styles.back}>Back</Text>
       </Pressable>
@@ -33,7 +33,7 @@ export function OnboardingChrome({
         ))}
       </View>
       {children}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -52,6 +52,15 @@ export const onboardingStyles = StyleSheet.create({
   error: { color: theme.color.risk, marginBottom: 12, fontFamily: "Inter_400Regular" },
   body: { fontSize: 16, lineHeight: 26, color: theme.color.navyMuted, fontFamily: "Inter_400Regular" },
   fine: { marginTop: 12, fontSize: 13, lineHeight: 20, color: theme.color.muted, fontFamily: "Inter_400Regular" },
+  sectionKicker: {
+    marginTop: 28,
+    marginBottom: 8,
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+    fontSize: 11,
+    color: theme.color.muted,
+    fontFamily: "Inter_500Medium",
+  },
   check: {
     borderWidth: 1,
     borderColor: theme.color.hairline,
@@ -64,7 +73,8 @@ export const onboardingStyles = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: theme.color.paper, padding: 28, paddingTop: 64 },
+  screen: { flex: 1, backgroundColor: theme.color.paper },
+  content: { padding: 28, paddingTop: 64, paddingBottom: 64 },
   back: { color: theme.color.muted, fontFamily: "Inter_500Medium", marginBottom: 24 },
   kicker: {
     letterSpacing: 1.4,

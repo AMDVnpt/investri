@@ -1,10 +1,12 @@
 import type { AppConfig } from "@investri/config";
 import { mockFlags } from "@investri/config";
 import { createMockProviders } from "./mocks/index";
+import { createFundingProvider } from "./plaid";
 import type { AuditSink, ProviderRegistry } from "./types";
 
 export * from "./types";
 export { createMockProviders } from "./mocks/index";
+export { PLAID_DEMO_INSTITUTIONS } from "./plaid";
 
 export function createProviders(config: AppConfig, audit: AuditSink): ProviderRegistry {
   const flags = mockFlags(config);
@@ -16,5 +18,8 @@ export function createProviders(config: AppConfig, audit: AuditSink): ProviderRe
     );
   }
 
-  return mocks;
+  return {
+    ...mocks,
+    funding: createFundingProvider(config, mocks.funding),
+  };
 }

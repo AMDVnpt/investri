@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { prisma } from "@investri/database";
 import {
   DocumentAccessLevel,
@@ -10,6 +12,53 @@ import {
   moneyString,
 } from "@investri/domain";
 import type { OfferingListQuery } from "@investri/validation";
+import { withDiligenceDocuments } from "./diligence-documents";
+
+function assetsDir() {
+  const candidates = [
+    path.join(__dirname, "assets"),
+    path.join(__dirname, "../assets"),
+    path.resolve(process.cwd(), "packages/assets"),
+    path.resolve(process.cwd(), "assets"),
+  ];
+  return candidates.find((dir) => existsSync(dir)) ?? candidates[0];
+}
+
+function readDocumentBody(url: string) {
+  const relative = url.replace(/^\/assets\//, "");
+  const filePath = path.join(assetsDir(), relative);
+  if (!existsSync(filePath)) {
+    return {
+      body: "This illustrative document is available in the demonstration pack. Content could not be loaded from disk.",
+      contentType: url.endsWith(".pdf") ? "application/pdf" : "text/plain",
+    };
+  }
+  if (url.endsWith(".pdf")) {
+    return {
+      body: "This diligence PDF is illustrative. Use Open to download or view the file. It is not an offering of securities.",
+      contentType: "application/pdf",
+    };
+  }
+  return { body: readFileSync(filePath, "utf8"), contentType: "text/plain" };
+}
+
+function toDocumentCard(doc: {
+  id: string;
+  title: string;
+  category: string;
+  url: string;
+  accessLevel?: string;
+  sortOrder?: number;
+}) {
+  return {
+    id: doc.id,
+    title: doc.title,
+    category: doc.category,
+    url: doc.url,
+    accessLevel: doc.accessLevel ?? null,
+    sortOrder: doc.sortOrder ?? 0,
+  };
+}
 
 @Injectable()
 export class OfferingsService {
@@ -85,7 +134,18 @@ export class OfferingsService {
 
   async documents(id: string, authenticated: boolean) {
     const offering = await this.requireOffering(id);
-    return offering.documents.filter((doc) => this.canRead(doc.accessLevel, authenticated));
+    return withDiligenceDocuments(offering.documents, authenticated, (level, auth) =>
+      this.canRead(level as DocumentAccessLevel, auth),
+    ).map(toDocumentCard);
+  }
+
+  async document(id: string, docId: string, authenticated: boolean) {
+    const docs = await this.documents(id, authenticated);
+    const doc = docs.find((row) => row.id === docId);
+    if (!doc) {
+      throw new NotFoundException("Document not found");
+    }
+    return { ...doc, ...readDocumentBody(doc.url) };
   }
 
   async risks(id: string, authenticated: boolean) {
@@ -259,7 +319,9 @@ export class OfferingsService {
       allocations: offering.allocations,
       eligibilityRules: offering.eligibilityRules,
       risks: offering.risks.filter((risk) => authenticated || risk.isSummary),
-      documents: offering.documents.filter((doc) => this.canRead(doc.accessLevel, authenticated)),
+      documents: withDiligenceDocuments(offering.documents, authenticated, (level, auth) =>
+        this.canRead(level as DocumentAccessLevel, auth),
+      ).map(toDocumentCard),
       updates: authenticated ? offering.updates : [],
       projects: offering.projectInvestments.map((link) => this.toProject(link)),
       taxCreditIllustration: illustration,

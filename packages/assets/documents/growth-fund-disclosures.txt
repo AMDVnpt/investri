@@ -1,0 +1,25 @@
+InvestRI Growth Fund I — Offering Disclosures (ILLUSTRATIVE)
+
+Electronic delivery
+You agree to receive offering documents, statements, and tax-credit notices
+electronically in this demonstration.
+
+Conflicts
+The manager, placement agent, and related parties in a live offering would
+disclose conflicts. This POC uses fictional counterparties only.
+
+Suitability
+You attested that you can bear a loss of principal and accept illiquidity.
+If that is no longer true, do not continue.
+
+No advice
+InvestRI does not provide tax, legal, or investment advice. The proposed
+Rhode Island tax credit is not investment return and is not cash.
+
+Privacy of funding
+Bank linking uses Plaid (sandbox or demonstration). InvestRI stores a token
+only — never a routing number, account number, or bank password.
+
+Forward-looking statements
+Target returns, allocations, and project metrics are configurable seed data.
+Actual results can be materially worse.
