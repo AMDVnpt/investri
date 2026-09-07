@@ -7,7 +7,8 @@ import { Wordmark } from "../components/Wordmark";
 
 export default function SignInScreen() {
   const router = useRouter();
-  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
+  const { returnTo: returnToParam } = useLocalSearchParams<{ returnTo?: string }>();
+  const returnTo = Array.isArray(returnToParam) ? returnToParam[0] : returnToParam;
   const [email, setEmail] = useState("alex.smith@demo.investri.ri");
   const [password, setPassword] = useState("DemoPass123!");
   const [error, setError] = useState<string | null>(null);

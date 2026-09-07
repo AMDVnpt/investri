@@ -7,7 +7,8 @@ import { Wordmark } from "../components/Wordmark";
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
+  const { returnTo: returnToParam } = useLocalSearchParams<{ returnTo?: string }>();
+  const returnTo = Array.isArray(returnToParam) ? returnToParam[0] : returnToParam;
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

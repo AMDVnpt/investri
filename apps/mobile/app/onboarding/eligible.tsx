@@ -1,9 +1,10 @@
 import { Pressable, Text } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { resolveOfferingId } from "../../lib/onboarding";
 import { OnboardingChrome, onboardingStyles as s } from "../../components/OnboardingChrome";
 
 export default function EligibleScreen() {
-  const { offeringId } = useLocalSearchParams<{ offeringId?: string }>();
+  const offeringId = resolveOfferingId(useLocalSearchParams<{ offeringId?: string; offering?: string }>());
   const router = useRouter();
 
   return (

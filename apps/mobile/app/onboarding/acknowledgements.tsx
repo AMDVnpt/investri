@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { api } from "../../lib/api";
-import { routeForOnboarding } from "../../lib/onboarding";
+import { api, isAuthFailure } from "../../lib/api";
+import { onboardingSignInHref, resolveOfferingId, routeForOnboarding } from "../../lib/onboarding";
 import { OnboardingChrome, onboardingStyles as s } from "../../components/OnboardingChrome";
 import { theme } from "../../lib/theme";
 import type { OnboardingStatusResponse } from "../../lib/types";
@@ -10,7 +10,7 @@ import type { OnboardingStatusResponse } from "../../lib/types";
 type Disclosure = { key: string; title: string; body: string; version: number };
 
 export default function AcknowledgementsScreen() {
-  const { offeringId } = useLocalSearchParams<{ offeringId?: string }>();
+  const offeringId = resolveOfferingId(useLocalSearchParams<{ offeringId?: string; offering?: string }>());
   const router = useRouter();
   const [items, setItems] = useState<Disclosure[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -23,10 +23,14 @@ export default function AcknowledgementsScreen() {
         const loaded = await Promise.all(keys.map((key) => api<Disclosure>(`/disclosures/${key}`)));
         setItems(loaded);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to load disclosures");
+        const message = err instanceof Error ? err.message : "Unable to load disclosures";
+        setError(message);
+        if (isAuthFailure(message)) {
+          router.replace(onboardingSignInHref(offeringId));
+        }
       }
     })();
-  }, []);
+  }, [offeringId, router]);
 
   async function submit() {
     setError(null);
@@ -40,7 +44,11 @@ export default function AcknowledgementsScreen() {
       });
       router.replace(routeForOnboarding(status, offeringId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Acknowledgements failed");
+      const message = err instanceof Error ? err.message : "Acknowledgements failed";
+      setError(message);
+      if (isAuthFailure(message)) {
+        router.replace(onboardingSignInHref(offeringId));
+      }
     }
   }
 

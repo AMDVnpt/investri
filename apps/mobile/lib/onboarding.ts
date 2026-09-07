@@ -1,11 +1,40 @@
 import type { OnboardingStatusResponse } from "./types";
 
+export function firstSearchParam(value?: string | string[]) {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+  return value || undefined;
+}
+
+export function resolveOfferingId(params: {
+  offeringId?: string | string[];
+  offering?: string | string[];
+}) {
+  return firstSearchParam(params.offeringId) ?? firstSearchParam(params.offering);
+}
+
 export function offeringQuery(offeringId?: string) {
   return offeringId ? `?offeringId=${encodeURIComponent(offeringId)}` : "";
 }
 
+export function onboardingPath(offeringId?: string) {
+  return `/onboarding${offeringQuery(offeringId)}`;
+}
+
+export function onboardingSignInHref(offeringId?: string) {
+  return `/sign-in?returnTo=${encodeURIComponent(onboardingPath(offeringId))}`;
+}
+
+export function isEligibleStatus(status: OnboardingStatusResponse) {
+  return status.eligibleToInvest || status.status === "ELIGIBLE" || status.nextStep === "eligible";
+}
+
 export function routeForOnboarding(status: OnboardingStatusResponse, offeringId?: string) {
   const q = offeringQuery(offeringId);
+  if (isEligibleStatus(status)) {
+    return offeringId ? `/invest/amount${q}` : `/onboarding/eligible`;
+  }
   if (
     status.status === "IDENTITY_FAILED" ||
     status.status === "RESIDENCY_FAILED" ||

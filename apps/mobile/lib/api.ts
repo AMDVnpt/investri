@@ -40,7 +40,55 @@ export const session = {
   },
 };
 
-export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+function readApiError(data: unknown, fallback = "Request failed") {
+  const raw = (data as { message?: string | string[] } | null)?.message;
+  if (Array.isArray(raw)) {
+    return raw.filter(Boolean).join(", ") || fallback;
+  }
+  return raw || fallback;
+}
+
+export function isAuthFailure(message: string) {
+  return message === "Session expired" || message === "Sign in required" || message === "Unauthorized";
+}
+
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshSession(): Promise<boolean> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+  refreshPromise = (async () => {
+    const refreshToken = await session.getRefresh();
+    if (!refreshToken) {
+      return false;
+    }
+    try {
+      const response = await fetch(`${API_URL}/api/v1/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        accessToken?: string;
+        refreshToken?: string;
+      };
+      if (!response.ok || !data.accessToken || !data.refreshToken) {
+        await session.clear();
+        return false;
+      }
+      await session.setTokens(data.accessToken, data.refreshToken);
+      return true;
+    } catch {
+      return false;
+    }
+  })().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
+}
+
+async function request(path: string, init?: RequestInit) {
   const access = await session.getAccess();
   const response = await fetch(`${API_URL}/api/v1${path}`, {
     ...init,
@@ -51,10 +99,32 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     },
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error((data as { message?: string }).message ?? "Request failed");
+  return { response, data };
+}
+
+export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const first = await request(path, init);
+  if (first.response.ok) {
+    return first.data as T;
   }
-  return data as T;
+
+  const message = readApiError(first.data);
+  const canRefresh = first.response.status === 401 && isAuthFailure(message) && !path.startsWith("/auth/");
+  if (canRefresh && (await refreshSession())) {
+    const retry = await request(path, init);
+    if (retry.response.ok) {
+      return retry.data as T;
+    }
+    const retryMessage = readApiError(retry.data);
+    if (isAuthFailure(retryMessage)) {
+      await session.clear();
+    }
+    throw new Error(retryMessage);
+  }
+  if (canRefresh) {
+    await session.clear();
+  }
+  throw new Error(message);
 }
 
 export function assetUrl(path?: string | null) {

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Pressable, ScrollView, Text, TextInput } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { api } from "../../lib/api";
-import { routeForOnboarding } from "../../lib/onboarding";
+import { api, isAuthFailure } from "../../lib/api";
+import { onboardingSignInHref, resolveOfferingId, routeForOnboarding } from "../../lib/onboarding";
 import { OnboardingChrome, onboardingStyles as s } from "../../components/OnboardingChrome";
 import type { OnboardingStatusResponse } from "../../lib/types";
 
 export default function IdentityScreen() {
-  const { offeringId } = useLocalSearchParams<{ offeringId?: string }>();
+  const offeringId = resolveOfferingId(useLocalSearchParams<{ offeringId?: string; offering?: string }>());
   const router = useRouter();
   const [legalFirstName, setLegalFirstName] = useState("Pat");
   const [legalLastName, setLegalLastName] = useState("Citizen");
@@ -31,7 +31,11 @@ export default function IdentityScreen() {
       });
       router.replace(routeForOnboarding(status, offeringId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Identity check failed");
+      const message = err instanceof Error ? err.message : "Identity check failed";
+      setError(message);
+      if (isAuthFailure(message)) {
+        router.replace(onboardingSignInHref(offeringId));
+      }
     }
   }
 
