@@ -4,6 +4,7 @@ import { Link, useRouter } from "expo-router";
 import { api, session } from "../../lib/api";
 import { theme } from "../../lib/theme";
 import { Wordmark } from "../../components/Wordmark";
+import { WelcomeHero } from "../../components/WelcomeHero";
 
 type PortfolioSummary = {
   empty: boolean;
@@ -31,14 +32,17 @@ function usd(value?: string) {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
     (async () => {
       if (!(await session.getAccess())) {
+        setSignedIn(false);
         return;
       }
+      setSignedIn(true);
       try {
         setPortfolio(await api<PortfolioSummary>("/portfolio"));
         const notes = await api<{ readAt: string | null }[]>("/notifications");
@@ -48,6 +52,13 @@ export default function HomeScreen() {
       }
     })();
   }, []);
+
+  if (signedIn !== true) {
+    if (signedIn === false) {
+      return <WelcomeHero />;
+    }
+    return <View style={styles.boot} />;
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -112,6 +123,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  boot: { flex: 1, backgroundColor: theme.color.navy },
   screen: { flex: 1, backgroundColor: theme.color.paper },
   content: { padding: 28, paddingTop: 72, paddingBottom: 64 },
   kicker: {

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
-import { api } from "../lib/api";
-import { theme } from "../lib/theme";
-import { EmptyState, ErrorState, Skeleton } from "../components/ScreenState";
+import { api } from "../../lib/api";
+import { theme } from "../../lib/theme";
+import { EmptyState, ErrorState, Skeleton } from "../../components/ScreenState";
 
 type Row = {
   id: string;

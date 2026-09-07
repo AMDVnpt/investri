@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
-import { api } from "../../lib/api";
-import { theme } from "../../lib/theme";
+import { api } from "../../../lib/api";
+import { theme } from "../../../lib/theme";
 
 type Credit = {
   id: string;

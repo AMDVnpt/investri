@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { api } from "../../lib/api";
-import { theme } from "../../lib/theme";
-import { DocumentRow } from "../../components/DocumentRow";
+import { api } from "../../../lib/api";
+import { theme } from "../../../lib/theme";
+import { DocumentRow } from "../../../components/DocumentRow";
 
 type Doc = { id: string; title: string; category: string; taxYear: number | null; url?: string };
 

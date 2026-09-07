@@ -3,12 +3,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { api, assetUrl, session } from "../../lib/api";
-import { AllocationChart } from "../../components/AllocationChart";
-import { Badge } from "../../components/Badge";
-import { DocumentRow } from "../../components/DocumentRow";
-import { theme } from "../../lib/theme";
-import type { MeResponse, OfferingDetail } from "../../lib/types";
+import { api, assetUrl, session } from "../../../lib/api";
+import { AllocationChart } from "../../../components/AllocationChart";
+import { Badge } from "../../../components/Badge";
+import { DocumentRow } from "../../../components/DocumentRow";
+import { theme } from "../../../lib/theme";
+import type { MeResponse, OfferingDetail } from "../../../lib/types";
 
 export default function OfferingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

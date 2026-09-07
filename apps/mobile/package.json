@@ -16,6 +16,7 @@
   "dependencies": {
     "@expo-google-fonts/inter": "^0.3.0",
     "@expo-google-fonts/newsreader": "^0.3.0",
+    "@expo/vector-icons": "^14.0.4",
     "@investri/ui": "workspace:*",
     "@babel/runtime": "^7.26.10",
     "@expo/metro-runtime": "~4.0.1",

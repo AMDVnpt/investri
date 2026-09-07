@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { api } from "../../lib/api";
-import { theme } from "../../lib/theme";
-import { DocumentRow } from "../../components/DocumentRow";
-import { ValueChart } from "../../components/ValueChart";
-import { signedUsd, usd } from "../../lib/format";
+import { api } from "../../../lib/api";
+import { theme } from "../../../lib/theme";
+import { DocumentRow } from "../../../components/DocumentRow";
+import { ValueChart } from "../../../components/ValueChart";
+import { signedUsd, usd } from "../../../lib/format";
 
 type PositionDetail = {
   offeringId: string;

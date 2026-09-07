@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { api, API_URL, session } from "../../lib/api";
-import { theme } from "../../lib/theme";
+import { api, API_URL, session } from "../../../lib/api";
+import { theme } from "../../../lib/theme";
 
 type Detail = {
   offeringName: string;

@@ -2,11 +2,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
-import { Wordmark } from "../components/Wordmark";
+import { Wordmark } from "./Wordmark";
 import { theme } from "../lib/theme";
 import { photoSource } from "../lib/photos";
 
-export default function WelcomeScreen() {
+export function WelcomeHero() {
   return (
     <View style={styles.screen}>
       <Image
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     paddingHorizontal: 28,
-    paddingBottom: 56,
+    paddingBottom: 28,
   },
   headline: {
     marginTop: 28,

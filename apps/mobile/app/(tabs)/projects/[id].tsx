@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { api, assetUrl } from "../../lib/api";
-import { theme } from "../../lib/theme";
+import { api, assetUrl } from "../../../lib/api";
+import { theme } from "../../../lib/theme";
 
 type Detail = {
   name: string;

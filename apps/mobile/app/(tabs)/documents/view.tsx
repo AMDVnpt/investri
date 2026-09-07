@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { api, assetUrl } from "../../lib/api";
-import { theme } from "../../lib/theme";
+import { api, assetUrl } from "../../../lib/api";
+import { theme } from "../../../lib/theme";
 
 export default function DocumentViewScreen() {
   const router = useRouter();
