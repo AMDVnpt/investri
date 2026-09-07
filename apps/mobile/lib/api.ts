@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
+import { bundledPhotoUri } from "./photos";
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -63,5 +64,5 @@ export function assetUrl(path?: string | null) {
   if (path.startsWith("http")) {
     return path;
   }
-  return `${API_URL}${path}`;
+  return bundledPhotoUri(path) ?? `${API_URL}${path}`;
 }

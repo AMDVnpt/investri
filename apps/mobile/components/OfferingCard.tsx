@@ -5,6 +5,7 @@ import { Badge } from "./Badge";
 import { FundingBar } from "./FundingBar";
 import { theme } from "../lib/theme";
 import { assetUrl } from "../lib/api";
+import { photoSource } from "../lib/photos";
 import type { OfferingCard as OfferingCardType } from "../lib/types";
 
 export function OfferingCard({
@@ -18,7 +19,7 @@ export function OfferingCard({
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={offering.name}>
       <View style={styles.photoWrap}>
         <Image
-          source={{ uri: assetUrl(offering.heroImageUrl) }}
+          source={photoSource(offering.heroImageUrl) ?? { uri: assetUrl(offering.heroImageUrl) }}
           style={StyleSheet.absoluteFill}
           contentFit="cover"
           accessibilityLabel={offering.heroImageAlt ?? offering.name}

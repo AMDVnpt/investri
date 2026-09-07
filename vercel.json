@@ -15,7 +15,7 @@
       "buildCommand": "cd ../.. && pnpm --filter @investri/api... build && pnpm --filter @investri/api bundle:vercel",
       "functions": {
         "dist/vercel.cjs": {
-          "includeFiles": "{dist/node_modules/**,dist/assets/**}",
+          "includeFiles": "dist/**",
           "maxDuration": 60
         }
       }
@@ -23,7 +23,7 @@
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": { "service": "api" } },
-    { "source": "/assets/(.*)", "destination": { "service": "api" } },
+    { "source": "/assets/(.*)", "destination": { "service": "admin" } },
     { "source": "/(.*)", "destination": { "service": "admin" } }
   ]
 }

@@ -5,10 +5,27 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
 import { json, static as expressStatic, type Express } from "express";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { AppModule } from "./app.module";
 import { loadConfig } from "@investri/config";
+
+function resolveAssetsDir() {
+  const candidates = [
+    path.join(__dirname, "assets"),
+    path.join(__dirname, "dist", "assets"),
+    path.join(process.cwd(), "dist", "assets"),
+    path.join(process.cwd(), "assets"),
+    path.resolve(__dirname, "../../../packages/assets"),
+    path.resolve(process.cwd(), "../../packages/assets"),
+  ];
+  for (const dir of candidates) {
+    if (existsSync(path.join(dir, "photos")) || existsSync(path.join(dir, "wordmark.svg"))) {
+      return dir;
+    }
+  }
+  return candidates[0];
+}
 
 function allowedOrigins() {
   const config = loadConfig();
@@ -45,11 +62,12 @@ export async function createApp() {
     credentials: true,
   });
 
-  const bundledAssets = path.join(__dirname, "assets");
-  const assetsDir = existsSync(bundledAssets)
-    ? bundledAssets
-    : path.resolve(__dirname, "../../../packages/assets");
-  app.use("/assets", expressStatic(assetsDir));
+  const assetsDir = resolveAssetsDir();
+  const photoCount = existsSync(path.join(assetsDir, "photos"))
+    ? readdirSync(path.join(assetsDir, "photos")).length
+    : 0;
+  console.log(`InvestRI static assets: ${assetsDir} (${photoCount} photos)`);
+  app.use("/assets", expressStatic(assetsDir, { fallthrough: false }));
 
   const swagger = new DocumentBuilder()
     .setTitle("InvestRI API")

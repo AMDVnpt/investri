@@ -1,16 +1,16 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
 import { Wordmark } from "../components/Wordmark";
 import { theme } from "../lib/theme";
-
-const welcome = require("../assets/photos/welcome-waterfront.jpg");
+import { photoSource } from "../lib/photos";
 
 export default function WelcomeScreen() {
   return (
     <View style={styles.screen}>
       <Image
-        source={welcome}
+        source={photoSource("/assets/photos/welcome-waterfront.jpg")}
         style={StyleSheet.absoluteFill}
         contentFit="cover"
         accessibilityLabel="Mohegan Bluffs coastline on Block Island, Rhode Island"

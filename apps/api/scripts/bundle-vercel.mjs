@@ -75,9 +75,15 @@ rmSync(path.join(bundledNodeModules, ".prisma/client/libquery_engine-darwin.dyli
 });
 
 const assetsSrc = path.join(root, "../../packages/assets");
-if (existsSync(assetsSrc)) {
-  copyDir(assetsSrc, path.join(dist, "assets"));
+const assetsDest = path.join(dist, "assets");
+if (!existsSync(path.join(assetsSrc, "photos", "welcome-waterfront.jpg"))) {
+  throw new Error(`Missing seed photos at ${assetsSrc}/photos. The Vercel function cannot serve /assets.`);
 }
+copyDir(assetsSrc, assetsDest);
+const photoCount = readdirSync(path.join(assetsDest, "photos")).filter((name) =>
+  name.endsWith(".jpg"),
+).length;
+console.log(`Copied ${photoCount} photos into ${path.relative(root, assetsDest)}`);
 
 for (const name of readdirSync(dist)) {
   if (name === "vercel.cjs" || name === "node_modules" || name === "assets") continue;
