@@ -12,16 +12,18 @@ import {
   moneyString,
 } from "@investri/domain";
 import type { OfferingListQuery } from "@investri/validation";
-import { withDiligenceDocuments } from "./diligence-documents";
+import { DOCUMENT_FALLBACK_BODIES, withDiligenceDocuments } from "./diligence-documents";
 
 function assetsDir() {
   const candidates = [
     path.join(__dirname, "assets"),
-    path.join(__dirname, "../assets"),
+    path.resolve(__dirname, "../../../packages/assets"),
+    path.resolve(process.cwd(), "../../packages/assets"),
     path.resolve(process.cwd(), "packages/assets"),
+    path.join(__dirname, "../assets"),
     path.resolve(process.cwd(), "assets"),
   ];
-  return candidates.find((dir) => existsSync(dir)) ?? candidates[0];
+  return candidates.find((dir) => existsSync(path.join(dir, "documents"))) ?? candidates[0];
 }
 
 function readDocumentBody(url: string) {
@@ -29,13 +31,17 @@ function readDocumentBody(url: string) {
   const filePath = path.join(assetsDir(), relative);
   if (!existsSync(filePath)) {
     return {
-      body: "This illustrative document is available in the demonstration pack. Content could not be loaded from disk.",
+      body:
+        DOCUMENT_FALLBACK_BODIES[url] ??
+        "This illustrative document is available in the demonstration pack. Content could not be loaded from disk.",
       contentType: url.endsWith(".pdf") ? "application/pdf" : "text/plain",
     };
   }
   if (url.endsWith(".pdf")) {
     return {
-      body: "This diligence PDF is illustrative. Use Open to download or view the file. It is not an offering of securities.",
+      body:
+        DOCUMENT_FALLBACK_BODIES[url] ??
+        "This diligence PDF is illustrative. Use Open to download or view the file. It is not an offering of securities.",
       contentType: "application/pdf",
     };
   }
